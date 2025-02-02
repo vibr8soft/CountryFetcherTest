@@ -1,32 +1,27 @@
-//
-//  ArtmCountriesTestApp.swift
-//  ArtmCountriesTest
-//
-//  Created by Olivier Lavoie on 2025-02-01.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct ArtmCountriesTestApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
+    init() {
+        configureDependencies()
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            CountryListView()
         }
-        .modelContainer(sharedModelContainer)
+    }
+
+    private func configureDependencies() {
+        let container = DependenciesContainer.shared
+
+        container.register(type: CountryServiceProtocol.self,
+                           factory: CountryService())
+        
+        container.register(
+            type: IGetAllCountriesSortedByNameUseCase.self,
+            factory: GetAllCountriesSortedByNameUseCase(countriesService: container.resolve())
+        )
     }
 }
